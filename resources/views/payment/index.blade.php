@@ -5,7 +5,26 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             {{ Breadcrumbs::render('billing.payment') }}
+            @if ($message = Session::pull('success'))
+            <div class="custom-alerts alert alert-success ">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                {!! $message !!}
+            </div>
+            
+            @endif
+
+            @if ($message = Session::pull('error'))
+            <div class="custom-alerts alert alert-danger ">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                {!! $message !!}
+            </div>
+            @endif
             <div class="card">
+
                 <div class="card-header">
                     Items
                 </div>
@@ -15,25 +34,26 @@
                         {{ csrf_field() }}
 
                         <div class="form-group">
-                            <label for="amount" class="col-md-4 control-label">Sample Item</label>
-                            <div class="col-md-6">
-                                <img src="{{asset('images/mat-img.jpg')}}" width=250px; height=150px; alt="Sample Img">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    @foreach ($Items as $item)
+                                    <div class="col-lg-3 col-md-3 col-sm-4 col-6 text-center">
+                                      
+                                        <a href="/">
+                                            <figure class="figure">
+                                                <img src="{{asset($item->imagePath)}}" width="100" height="90" class="rounded" alt="Yoga Mattress">
+                                                <figcaption class="figure-caption text-center">{{$item->name}}</figcaption>
+                                                <figcaption class="figure-caption text-center">&#8369; {{$item->price}}</figcaption>
+                                                <button onclick="document.getElementById('hidden_input').value = {{$item->id}}" type="submit" class="btn">Purchase</button>
+                                            </figure>
+                                        </a>
+                                        
+                                    </div>
+                                    @endforeach
+                                    <input type="hidden" id="hidden_input" name="item_id" value="">
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <input id="amount" type="text" class="form-control" name="amount" value="586.00" readonly>
-
-                                @if ($errors->has('amount'))
-                                    <span class="help-block">
-                                        <strong>{{ $errors->first('amount') }}</strong>
-                                    </span>
-                                @endif
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <div class="col-md-6 col-md-offset-4">
-                                <button type="submit" class="btn btn-secondary">Purchase</button>
-                            </div>
+                            
                         </div>
                     </form>
                 </div>

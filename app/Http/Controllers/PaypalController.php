@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Item as ModelsItem;
 use Illuminate\Http\Request;
-//Paypal
+
 
 use Session;
 use Illuminate\Support\Facades\Redirect;
+//Paypal
 use PayPal\Rest\ApiContext;
 use PayPal\Auth\OAuthTokenCredential;
 use PayPal\Api\Payer;
-use PayPal\Api\Item;
+use PayPal\Api\Item as PaypalItem;
 use PayPal\Api\ItemList;
 use PayPal\Api\Amount;
 use PayPal\Api\Transaction;
@@ -19,11 +21,14 @@ use PayPal\Api\Payment;
 use PayPal\Exception\PayPalConnectionException;
 use PayPal\Api\ExecutePayment;
 use PayPal\Api\PaymentExecution;
+use Illuminate\Support\Facades\URL;
+//Models
+use App\Models\Item;
 
 class PaypalController extends Controller
 {
     private $api_config;
-
+    
     public function __construct()
     {
         $config = config('paypal');
@@ -33,32 +38,37 @@ class PaypalController extends Controller
 
     public function index()
     {
-       
-        return view('payment.index');
+        $Items = Item::get();
+        return view('payment.index', compact('Items'));
     }
 
     public function submit(Request $request)
     {
+
+        $item = Item::where('id',$request->item_id)->first();
+
         $payer = new Payer();
         $payer->setPaymentMethod('paypal');
-
-        $product = new Item();
-        $product->setName('Yoga Mat')->setCurrency(config('paypal.currency'))->setQuantity(1)->setPrice($request->input('amount'));
+      
+        $product = new PaypalItem();
+        $product->setName($item->name)->setCurrency(config('paypal.currency'))->setQuantity(1)->setPrice($item->price); //one at a time
 
         $prodList = new ItemList();
         $prodList->setItems(array($product));
 
         $amount = new Amount();
-        $amount->setCurrency(config('paypal.currency'))->setTotal($request->input('amount'));
+        $amount->setCurrency(config('paypal.currency'))->setTotal($item->price);
 
         $transaction = new Transaction();
         $transaction->setAmount($amount)
             ->setItemList($prodList)
-            ->setDescription('Good example');
+            ->setDescription($item->name);
+
+        
 
         $redirect_urls = new RedirectUrls();
-        $redirect_urls->setReturnUrl(\URL::route('billing.status'))
-            ->setCancelUrl(\URL::route('billing.status'));
+        $redirect_urls->setReturnUrl(URL::route('billing.status')) //If payment is successful
+                    ->setCancelUrl(URL::route('billing.status')); //If payment is cancelled
 
         $payment = new Payment();
         $payment->setIntent('Sale')->setPayer($payer)->setRedirectUrls($redirect_urls)->setTransactions(array($transaction));
@@ -66,14 +76,14 @@ class PaypalController extends Controller
         try 
         {
             $payment->create($this->api_config);
-        } 
+        }
         catch (\PayPal\Exception\PPConnectionException $e)
         {
-            if (\Config::get('app.debug')) {
+            if (config('app.debug')) {
                 Session::put('error','Connection timeout');
                 return Redirect::route('paywithpaypal');                
             } else {
-                Session::put('error','Some error occur, sorry for inconvenient');
+                Session::put('error','Backend Error');
                 return Redirect::route('paywithpaypal');                
             }
         }
@@ -86,36 +96,39 @@ class PaypalController extends Controller
         }
         
         Session::put('payment_id', $payment->getId());
-
+        
         if(isset($redirect_url)) {            
             return Redirect::away($redirect_url);
         }
 
         Session::put('error','Unknown error occurred');
 
-        return redirect()->back();
+        return redirect()->route('billing.payment');
     }
 
     public function status(Request $request)
     {
+       
         $payment_id = Session::get('payment_id');
-
+        
         Session::forget('payment_id');
         if (empty($request->input('PayerID')) || empty($request->input('token'))) {
-            Session::put('error','Payment failed');
-            return redirect()->route('billing.payment');
+            Session::put('error','Purchase failed.');
+            return redirect()->route('home');
         }
+        
         $payment = Payment::get($payment_id, $this->api_config);        
         $execution = new PaymentExecution();
         $execution->setPayerId($request->input('PayerID'));        
         $result = $payment->execute($execution, $this->api_config);
-        
+       
         if ($result->getState() == 'approved') {         
-            Session::put('success','Payment success !!');
-            return redirect()->route('billing.payment');
+            Session::put('success','Purchase Success!');
+            return redirect()->route('home');
         }
 
         Session::put('error','Payment failed !!');
-		return redirect()->route('billing.payment');
+
+		return redirect()->route('home');
     }
 }
