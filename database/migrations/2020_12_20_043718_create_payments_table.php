@@ -15,7 +15,12 @@ class CreatePaymentsTable extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->string('payment_id');
+            $table->string('transaction_id');
+            $table->string('customer_id');
+            $table->string('customer_email');
+            $table->float('amount', 10, 2);
+            $table->string('currency');
+            $table->string('transaction_status');
         });
     }
 

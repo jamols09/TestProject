@@ -14,8 +14,10 @@
                             {{ session('status') }}
                         </div>
                     @endif
-
-                    <a href="{{ route('billing.payment') }}">Paypal Integration (v1)</a>
+                    <ul>
+                    <li><a href="{{ route('billing.payment') }}">Paypal Integration (v1)</a></li>
+                    <li><a href="{{ route('billing.checkout') }}">Paypal Checkout (v2)</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
