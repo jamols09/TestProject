@@ -39,6 +39,7 @@ class PaypalController extends Controller
     public function index()
     {
         $Items = Item::get();
+       
         return view('payment.index', compact('Items'));
     }
 

@@ -100,24 +100,16 @@
                                     // Show a success message
                                     console.log(orderData)
                                     alert('Transaction completed by ' + orderData.result.payer.name.given_name);
-                                    
-                                    // let data = {
-                                    //     transaction_id: orderData.result.id,
-                                    //     customer_id: orderData.result.payer.payer_id,
-                                    //     customer_email: orderData.result.payer.email_address,
-                                    //     amount: orderData.result.purchase_units[0].amount.value,
-                                    //     currency: orderData.result.purchase_units[0].amount.currency_code,
-                                    //     transaction_status: orderData.result.status
-                                    // }
-                                    // return fetch('savePaymentInfo/', {
-                                    //     method: 'POST',
+                                   
+                                    // return fetch('savePaymentInfo/' + orderData.result.id, {
+                                    //     method: 'get',
                                     //     headers: {
                                     //         'content-type': 'application/json',
                                     //         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                                     //     },
-                                    //     data: data,
-                                    // }).then(function(data) {
-                                    //     console.log(data)
+                                    // })
+                                    // .then(function(data) {
+                                    //     console.log("Payee Details: ",data)
                                     // })
                                 });
                             }

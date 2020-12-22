@@ -9,6 +9,8 @@ use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
 use PayPalHttp\HttpException;
+use Sample\PayPalClient;
+use PayPalCheckoutSdk\Orders\OrdersGetRequest;
 
 use App\Models\Payment;
 use Illuminate\Support\Facades\Log;
@@ -68,17 +70,16 @@ class PaypalCheckoutController extends Controller
 
         try {
             $response = $this->client->execute($order);
-            // Log::debug($response->result->id);
-            // Log::debug($response);
-            //Save Customer Transaction
-            // $payment = new Payment;
-            // $payment->transaction_id = $response->result->id; //transaction id
-            // $payment->customer_id =  $response->result->purchase_units[0]->payee->merchant_id;
-            // $payment->customer_email =  $response->result->purchase_units[0]->payee->email_address;
-            // $payment->amount =  $response->result->purchase_units[0]->amount->value;
-            // $payment->currency =  $response->result->purchase_units[0]->amount->currency_code;
-            // $payment->transaction_status =  $response->result->status;
-            // $payment->save();
+            
+            // Save Customer Transaction
+            $payment = new Payment;
+            $payment->transaction_id = $response->result->id; //transaction id
+            $payment->customer_id =  $response->result->purchase_units[0]->payee->merchant_id;
+            $payment->customer_email =  $response->result->purchase_units[0]->payee->email_address;
+            $payment->amount =  $response->result->purchase_units[0]->amount->value;
+            $payment->currency =  $response->result->purchase_units[0]->amount->currency_code;
+            $payment->transaction_status =  $response->result->status;
+            $payment->save();
 
             return response()->json($response);
         }
@@ -87,8 +88,5 @@ class PaypalCheckoutController extends Controller
         }
     }
 
-    public function savePaymentInfo(Request $request)
-    {
-        return response()->json($request);
-    }
+    
 }
