@@ -21,6 +21,7 @@ class CreatePaymentsTable extends Migration
             $table->float('amount', 10, 2);
             $table->string('currency');
             $table->string('transaction_status');
+            $table->timestamps();
         });
     }
 
